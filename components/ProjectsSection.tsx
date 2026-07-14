@@ -1,4 +1,5 @@
 import { DocIcon } from './Icons';
+import PdfThumbnail from './PdfThumbnail';
 import type { ProjectItem } from '@/lib/types';
 
 export default function ProjectsSection({ projects }: { projects: ProjectItem[] }) {
@@ -12,7 +13,11 @@ export default function ProjectsSection({ projects }: { projects: ProjectItem[] 
           {projects.map((p) => (
             <div className="project-card" key={p.id}>
               <div className="project-thumb">
-                <DocIcon />
+                {p.pdf_url ? (
+                  <PdfThumbnail pdfUrl={p.pdf_url} fallbackIcon={<DocIcon />} />
+                ) : (
+                  <DocIcon />
+                )}
               </div>
               <div className="project-body">
                 <h3>{p.title}</h3>
