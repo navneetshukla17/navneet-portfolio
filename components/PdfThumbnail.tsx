@@ -114,28 +114,40 @@ export default function PdfThumbnail({ pdfUrl }: Props) {
     };
   }, [pdfUrl]);
 
-  if (loading) {
-    return (
-      <div className="pdf-thumb-state">
-        <span className="pdf-thumb-spinner">⏳</span>
-        <span style={{ fontSize: 11, marginTop: 4, color: 'var(--text-dim)' }}>Loading thumbnail...</span>
-      </div>
-    );
-  }
-
-  if (errorMsg) {
-    return (
-      <div className="pdf-thumb-state" style={{ color: 'red', fontSize: '12px', padding: '10px', wordBreak: 'break-all', overflowY: 'auto', textAlign: 'left' }}>
-        <strong>Error rendering PDF:</strong><br/>
-        {errorMsg}
-      </div>
-    );
-  }
-
   return (
-    <canvas
-      ref={canvasRef}
-      className="pdf-thumb-canvas"
-    />
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <canvas
+        ref={canvasRef}
+        className="pdf-thumb-canvas"
+        style={{ display: loading || errorMsg ? 'none' : 'block' }}
+      />
+
+      {loading && (
+        <div className="pdf-thumb-state">
+          <span className="pdf-thumb-spinner">⏳</span>
+          <span style={{ fontSize: 11, marginTop: 4, color: 'var(--text-dim)' }}>
+            Loading thumbnail...
+          </span>
+        </div>
+      )}
+
+      {errorMsg && (
+        <div
+          className="pdf-thumb-state"
+          style={{
+            color: 'red',
+            fontSize: '12px',
+            padding: '10px',
+            wordBreak: 'break-all',
+            overflowY: 'auto',
+            textAlign: 'left',
+          }}
+        >
+          <strong>Error rendering PDF:</strong>
+          <br />
+          {errorMsg}
+        </div>
+      )}
+    </div>
   );
 }
