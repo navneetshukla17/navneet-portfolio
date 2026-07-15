@@ -7,33 +7,67 @@ interface Props {
   fallbackIcon: React.ReactNode;
 }
 
-export default function PdfThumbnail({ pdfUrl, fallbackIcon }: Props) {
+type PdfJsLib = any;
+
+declare global {
+  interface Window {
+    pdfjsLib?: PdfJsLib;
+  }
+}
+
+const CDN_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const LOAD_TIMEOUT = 15000;
+
+function loadPdfJs(): Promise<PdfJsLib> {
+  return new Promise((resolve, reject) => {
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = WORKER_URL;
+      resolve(window.pdfjsLib);
+      return;
+    }
+
+    const timer = setTimeout(() => reject(new Error('Timed out loading pdf.js from CDN')), LOAD_TIMEOUT);
+
+    const script = document.createElement('script');
+    script.src = CDN_URL;
+    script.onload = () => {
+      clearTimeout(timer);
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = WORKER_URL;
+        resolve(window.pdfjsLib);
+      } else {
+        reject(new Error('pdf.js loaded but pdfjsLib not found on window'));
+      }
+    };
+    script.onerror = () => {
+      clearTimeout(timer);
+      reject(new Error('Failed to load pdf.js script from CDN'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+export default function PdfThumbnail({ pdfUrl }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
     if (!pdfUrl) {
       setLoading(false);
-      setError(true);
+      setErrorMsg('No PDF URL provided');
       return;
     }
 
-    const scriptId = 'pdfjs-loader-script';
-    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
-
     const renderFirstPage = async () => {
       try {
-        const pdfjsLib = (window as any)['pdfjs-dist/build/pdf'];
-        if (!pdfjsLib) {
-          throw new Error('PDF.js not loaded on window');
-        }
+        const pdfjsLib = await loadPdfJs();
+        if (!active) return;
 
-        // Configure the worker to match the major version
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const proxiedUrl = `/api/pdf-proxy?url=${encodeURIComponent(pdfUrl)}`;
+        const loadingTask = pdfjsLib.getDocument(proxiedUrl);
         const pdf = await loadingTask.promise;
         if (!active) return;
 
@@ -47,8 +81,7 @@ export default function PdfThumbnail({ pdfUrl, fallbackIcon }: Props) {
         if (!context) return;
 
         const viewport = page.getViewport({ scale: 1.0 });
-        
-        // Render at a solid 400px width for high-density displays (Retina/etc.)
+
         const desiredWidth = 400;
         const scale = desiredWidth / viewport.width;
         const scaledViewport = page.getViewport({ scale });
@@ -65,47 +98,16 @@ export default function PdfThumbnail({ pdfUrl, fallbackIcon }: Props) {
         if (active) {
           setLoading(false);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to render PDF thumbnail:', err);
         if (active) {
-          setError(true);
+          setErrorMsg(err?.message || err?.stack || String(err) || 'Unknown error');
           setLoading(false);
         }
       }
     };
 
-    const initPdfJs = () => {
-      if ((window as any)['pdfjs-dist/build/pdf']) {
-        renderFirstPage();
-      } else {
-        const interval = setInterval(() => {
-          if ((window as any)['pdfjs-dist/build/pdf']) {
-            clearInterval(interval);
-            renderFirstPage();
-          }
-        }, 100);
-        setTimeout(() => clearInterval(interval), 5000); // 5s timeout safety
-      }
-    };
-
-    if (script) {
-      initPdfJs();
-    } else {
-      script = document.createElement('script');
-      script.id = scriptId;
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
-      script.async = true;
-      script.onload = () => {
-        initPdfJs();
-      };
-      script.onerror = () => {
-        if (active) {
-          setError(true);
-          setLoading(false);
-        }
-      };
-      document.body.appendChild(script);
-    }
+    renderFirstPage();
 
     return () => {
       active = false;
@@ -121,8 +123,13 @@ export default function PdfThumbnail({ pdfUrl, fallbackIcon }: Props) {
     );
   }
 
-  if (error) {
-    return <>{fallbackIcon}</>;
+  if (errorMsg) {
+    return (
+      <div className="pdf-thumb-state" style={{ color: 'red', fontSize: '12px', padding: '10px', wordBreak: 'break-all', overflowY: 'auto', textAlign: 'left' }}>
+        <strong>Error rendering PDF:</strong><br/>
+        {errorMsg}
+      </div>
+    );
   }
 
   return (

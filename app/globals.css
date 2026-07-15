@@ -144,6 +144,15 @@ section.section h2 {
   grid-template-columns: repeat(2, 1fr);
   gap: var(--sm);
 }
+.project-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+.project-card-link:hover {
+  text-decoration: none;
+}
 .project-card {
   background: var(--card-white);
   color: var(--card-white-text);
@@ -152,6 +161,12 @@ section.section h2 {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.project-card-link:hover .project-card {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: var(--text-dim);
 }
 .project-thumb {
   height: 120px;
@@ -206,19 +221,6 @@ section.section h2 {
   font-size: 14px;
   line-height: 20px;
   color: var(--card-white-dim);
-  margin-bottom: 16px;
-}
-.project-links {
-  display: flex;
-  gap: var(--sm);
-  flex-wrap: wrap;
-}
-.project-links a {
-  font-size: 13px;
-  font-family: 'Lexend Exa', 'Lexend Deca', sans-serif;
-  color: var(--card-white-text);
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 /* ---------- Links / Publications ---------- */

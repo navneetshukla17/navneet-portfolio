@@ -9,8 +9,9 @@ export function DocIcon({ className }: { className?: string }) {
 
 export function LinkedInIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="24" height="24" rx="4" fill="#0A66C2" />
+      <path d="M19 19H16V13.896C16 12.016 15.224 11 13.924 11C12.723 11 12.031 11.833 12.031 13.896V19H9.03V9.01H12.031V10.29C12.031 10.29 12.929 9 14.939 9C16.949 9 19 10.24 19 14.125V19ZM5.5 7.5C4.5 7.5 3.75 6.75 3.75 5.75C3.75 4.75 4.5 4 5.5 4C6.5 4 7.25 4.75 7.25 5.75C7.25 6.75 6.5 7.5 5.5 7.5ZM4 19V9H7V19H4Z" fill="white" />
     </svg>
   );
 }

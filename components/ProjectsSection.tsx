@@ -11,27 +11,27 @@ export default function ProjectsSection({ projects }: { projects: ProjectItem[] 
       ) : (
         <div className="projects-grid">
           {projects.map((p) => (
-            <div className="project-card" key={p.id}>
-              <div className="project-thumb">
-                {p.pdf_url ? (
-                  <PdfThumbnail pdfUrl={p.pdf_url} fallbackIcon={<DocIcon />} />
-                ) : (
-                  <DocIcon />
-                )}
-              </div>
-              <div className="project-body">
-                <h3>{p.title}</h3>
-                {p.description && <p>{p.description}</p>}
-                <div className="project-links">
-                  {p.pdf_url && <a href={`/project/${p.id}`}>View PRD</a>}
-                  {p.live_url && (
-                    <a href={p.live_url} target="_blank" rel="noreferrer">
-                      View Live
-                    </a>
+            <a
+              href={p.pdf_url || '#'}
+              target="_blank"
+              rel="noreferrer"
+              className="project-card-link"
+              key={p.id}
+            >
+              <div className="project-card">
+                <div className="project-thumb">
+                  {p.pdf_url ? (
+                    <PdfThumbnail pdfUrl={p.pdf_url} fallbackIcon={<DocIcon />} />
+                  ) : (
+                    <DocIcon />
                   )}
                 </div>
+                <div className="project-body">
+                  <h3>{p.title}</h3>
+                  {p.description && <p>{p.description}</p>}
+                </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       )}
